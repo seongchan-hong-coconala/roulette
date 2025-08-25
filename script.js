@@ -63,8 +63,16 @@ function createSquare() {
   // 드럼 본체 (불투명)
   const bodyGeo = new THREE.CylinderGeometry(3, 3, 1, 8);
   bodyGeo.rotateX(Math.PI / 2);
+  
+  // wood.png 텍스처 로드
+  const textureLoader = new THREE.TextureLoader();
+  const woodTexture = textureLoader.load('wood.png');
+  woodTexture.wrapS = THREE.RepeatWrapping;
+  woodTexture.wrapT = THREE.RepeatWrapping;
+  woodTexture.repeat.set(2, 1); // 텍스처 반복 설정
+  
   const bodyMat = new THREE.MeshPhongMaterial({
-    color: 0xD2691E,
+    map: woodTexture,
     side: THREE.DoubleSide,
     shininess: 100,
     transparent: false
@@ -232,6 +240,28 @@ function emitBall(ball) {
   }
 }
 
+// 새로운 공 생성
+function createNewBall() {
+  const sphereGeo = new THREE.SphereGeometry(0.12, 16, 16);
+  const sphereMat = new THREE.MeshPhongMaterial({ color: 0xff4444, shininess: 80 });
+  const newSphere = new THREE.Mesh(sphereGeo, sphereMat);
+  newSphere.position.set(0, 5, 0);
+  newSphere.userData = {
+    inside: true,
+    localPos: new THREE.Vector3(0, 0, 0) // 드럼 내부 로컬 좌표
+  };
+  newSphere.velocity = new THREE.Vector3(0, 0, 0);
+  newSphere.castShadow = true;
+  newSphere.receiveShadow = true;
+  
+  // 기존 공을 제거하고 새 공으로 교체
+  if (sphere) {
+    scene.remove(sphere);
+  }
+  sphere = newSphere;
+  scene.add(sphere);
+}
+
 // 애니메이션 루프
 function animate() {
   requestAnimationFrame(animate);
@@ -284,7 +314,13 @@ function animate() {
     emitted = true;
     if (sphere.userData.inside) emitBall(sphere);
   }
-  if (!isRotating && angularVelocity === 0) emitted = false;
+  if (!isRotating && angularVelocity === 0) {
+    emitted = false;
+    // 회전이 완전히 멈추면 새로운 공 생성
+    if (!sphere.userData.inside) {
+      createNewBall();
+    }
+  }
 
   controls.update();
   renderer.render(scene, camera);
