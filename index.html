@@ -16,6 +16,13 @@
     
     <div id="controls">
         <button id="rotationButton" onclick="toggleRotation()">START</button>
+        <div class="toggle-container">
+            <label class="toggle-switch">
+                <input type="checkbox" id="wallToggle" onchange="toggleWall()" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">優しさ</span>
+        </div>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
