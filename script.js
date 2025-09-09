@@ -359,12 +359,142 @@ function emitBall(ball) {
   const dir = new THREE.Vector3(0, -1, 0); // 수직 아래 방향
   ball.velocity.copy(dir.multiplyScalar(0.3));
 
-  // 당첨 여부 확인
+  // 당첨 여부 확인 및 텍스트 표시
   if (ball.userData.isWinner) {
     console.log('🎉 当たり!!');
+    createFloatingText('当たり!', 0xff4444, ball);
   } else {
     console.log('💔 はずれ');
+    createFloatingText('はずれ', 0x4444ff, ball);
   }
+}
+
+// 떠다니는 텍스트와 화살표 생성
+function createFloatingText(text, color, ball) {
+  // HTML2DCanvas로 텍스트 생성
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 128;
+  const context = canvas.getContext('2d');
+  
+  // 흰색 배경 그리기
+  context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // 검은색 테두리 그리기
+  context.strokeStyle = 'rgba(0, 0, 0, 1)';
+  context.lineWidth = 3;
+  context.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+  
+  // 텍스트 그리기
+  context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+  context.font = 'bold 32px Arial';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(text, canvas.width / 2, canvas.height / 2);
+  
+  // 텍스처 생성
+  const texture = new THREE.CanvasTexture(canvas);
+  const spriteMaterial = new THREE.SpriteMaterial({ 
+    map: texture,
+    transparent: true,
+    alphaTest: 0.1
+  });
+  const sprite = new THREE.Sprite(spriteMaterial);
+  sprite.scale.set(2, 1, 1);
+  // 카메라 앞쪽에 말풍선 배치 (카메라 위치: 4, 6, 4)
+  sprite.position.set(2, 5, 2); // 카메라보다 앞쪽에 배치
+  scene.add(sprite);
+  
+  // 화살표 생성 (공과 말풍선을 연결)
+  createDynamicArrow(ball, sprite);
+  
+  // 텍스트는 계속 유지 (사라지지 않음)
+}
+
+// 동적 화살표 생성 (공이 움직일 때마다 업데이트)
+function createDynamicArrow(ball, textSprite) {
+  // 점선을 위한 그룹
+  const arrowGroup = new THREE.Group();
+  scene.add(arrowGroup);
+  
+  // 화살표 업데이트 함수
+  function updateArrow() {
+    if (!ball || !textSprite) return;
+    
+    const fromPos = ball.position.clone();
+    const toPos = textSprite.position.clone();
+    const direction = new THREE.Vector3().subVectors(toPos, fromPos).normalize();
+    const distance = fromPos.distanceTo(toPos);
+    
+    // 기존 점선 제거
+    while (arrowGroup.children.length > 0) {
+      const child = arrowGroup.children[0];
+      arrowGroup.remove(child);
+      child.geometry.dispose();
+      child.material.dispose();
+    }
+    
+    // 점선 생성
+    const segmentLength = 0.2; // 각 점의 길이
+    const gapLength = 0.1; // 점 사이의 간격
+    const offsetFromBall = 0.3; // 공에서 떨어뜨리는 거리
+    const totalSegmentLength = segmentLength + gapLength;
+    const availableDistance = distance - offsetFromBall;
+    const numSegments = Math.floor(availableDistance / totalSegmentLength);
+    
+    for (let i = 0; i < numSegments; i++) {
+      const segmentGeometry = new THREE.CylinderGeometry(0.01, 0.01, segmentLength, 8); // 더 얇게
+      const segmentMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.6 // 약간 투명하게
+      });
+      const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
+      
+      // 점의 위치 계산 (공에서 offsetFromBall만큼 떨어진 지점부터 시작)
+      const t = (offsetFromBall + i * totalSegmentLength + segmentLength / 2) / distance;
+      const segmentPos = new THREE.Vector3().lerpVectors(fromPos, toPos, t);
+      
+      segment.position.copy(segmentPos);
+      segment.lookAt(toPos);
+      segment.rotateX(Math.PI / 2);
+      
+      arrowGroup.add(segment);
+    }
+  }
+  
+  // 화살표를 전역 변수에 저장하여 애니메이션 루프에서 업데이트
+  if (!window.currentArrow) {
+    window.currentArrow = { group: arrowGroup, update: updateArrow };
+  } else {
+    // 기존 화살표 제거
+    scene.remove(window.currentArrow.group);
+    while (window.currentArrow.group.children.length > 0) {
+      const child = window.currentArrow.group.children[0];
+      window.currentArrow.group.remove(child);
+      child.geometry.dispose();
+      child.material.dispose();
+    }
+    window.currentArrow.group.geometry?.dispose();
+    window.currentArrow.group.material?.dispose();
+    
+    window.currentArrow = { group: arrowGroup, update: updateArrow };
+  }
+  
+  // 3초 후 화살표 제거
+  setTimeout(() => {
+    if (window.currentArrow && window.currentArrow.group === arrowGroup) {
+      scene.remove(arrowGroup);
+      while (arrowGroup.children.length > 0) {
+        const child = arrowGroup.children[0];
+        arrowGroup.remove(child);
+        child.geometry.dispose();
+        child.material.dispose();
+      }
+      window.currentArrow = null;
+    }
+  }, 3000);
 }
 
 // 새로운 공 생성(회전 완전 정지 후 리필)
@@ -448,6 +578,11 @@ function animate(currentTime) {
     }
   }
   // 공 배출은 이제 타이머로 처리됨 (랜덤 타이밍)
+  
+  // 화살표 업데이트 (공이 움직일 때마다)
+  if (window.currentArrow && window.currentArrow.update) {
+    window.currentArrow.update();
+  }
 
   controls.update();
   renderer.render(scene, camera);
@@ -478,10 +613,32 @@ function toggleRotation(buttonNumber) {
     }
   }
   
-  // 기존 공 삭제
+  // 기존 공과 말풍선 삭제
   if (sphere) {
     scene.remove(sphere);
   }
+  
+  // 기존 말풍선과 화살표 제거
+  if (window.currentArrow) {
+    scene.remove(window.currentArrow.group);
+    while (window.currentArrow.group.children.length > 0) {
+      const child = window.currentArrow.group.children[0];
+      window.currentArrow.group.remove(child);
+      child.geometry.dispose();
+      child.material.dispose();
+    }
+    window.currentArrow = null;
+  }
+  
+  // 기존 말풍선 스프라이트 제거
+  const existingSprites = scene.children.filter(child => child instanceof THREE.Sprite);
+  existingSprites.forEach(sprite => {
+    scene.remove(sprite);
+    if (sprite.material.map) {
+      sprite.material.map.dispose();
+    }
+    sprite.material.dispose();
+  });
   
   // 버튼별 확률에 따라 구슬 색상 설정
   let isWinner = false;
