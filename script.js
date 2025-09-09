@@ -11,6 +11,17 @@ let emitted = false;
 let autoStopTimer = null;
 let emitTimer = null;
 
+// 카메라 애니메이션 변수
+let cameraAnimating = false;
+let cameraAnimationStart = null;
+let cameraAnimationDuration = 2000; // 2초
+let cameraReturnDuration = 2000; // 2초
+let cameraWaitDuration = 1000; // 1초 대기
+let originalCameraPosition = new THREE.Vector3();
+let targetCameraPosition = new THREE.Vector3(3.99, 7.81, 4.08);
+let isReturning = false;
+let isWaiting = false;
+
 let gravity = 0.01;
 let bounce = 0.45;
 let friction = 0.98;
@@ -27,7 +38,8 @@ function init() {
   scene.background = new THREE.Color(0x87CEEB); // 하늘색
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(4, 6, 4);
+  camera.position.set(0, 6, 15); // 정면 위치로 변경
+  
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -351,6 +363,61 @@ function createBasket() {
   scene.add(basketFront);
 }
 
+// 카메라 애니메이션 시작
+function startCameraAnimation() {
+  if (cameraAnimating) return;
+  
+  cameraAnimating = true;
+  cameraAnimationStart = Date.now();
+  originalCameraPosition.copy(camera.position);
+}
+
+// 카메라 애니메이션 업데이트
+function updateCameraAnimation() {
+  if (!cameraAnimating) return;
+  
+  const elapsed = Date.now() - cameraAnimationStart;
+  
+  if (isWaiting) {
+    // 대기 상태 - 아무것도 하지 않음
+    if (elapsed >= cameraWaitDuration) {
+      isWaiting = false;
+      isReturning = true;
+      cameraAnimationStart = Date.now();
+    }
+    return;
+  }
+  
+  const duration = isReturning ? cameraReturnDuration : cameraAnimationDuration;
+  const progress = Math.min(elapsed / duration, 1);
+  
+  // easeOutCubic 함수 사용 (부드러운 애니메이션)
+  const easeProgress = 1 - Math.pow(1 - progress, 3);
+  
+  // 카메라 위치 보간
+  if (isReturning) {
+    // 원위치로 돌아가기
+    camera.position.lerpVectors(targetCameraPosition, originalCameraPosition, easeProgress);
+  } else {
+    // 목표 위치로 이동
+    camera.position.lerpVectors(originalCameraPosition, targetCameraPosition, easeProgress);
+  }
+  
+  // 애니메이션 완료
+  if (progress >= 1) {
+    if (isReturning) {
+      // 원위치 복귀 완료
+      cameraAnimating = false;
+      isReturning = false;
+      isWaiting = false;
+    } else {
+      // 목표 위치 도달, 대기 상태로 전환
+      isWaiting = true;
+      cameraAnimationStart = Date.now();
+    }
+  }
+}
+
 // 구슬 배출
 function emitBall(ball) {
   ball.userData.inside = false;
@@ -359,13 +426,14 @@ function emitBall(ball) {
   const dir = new THREE.Vector3(0, -1, 0); // 수직 아래 방향
   ball.velocity.copy(dir.multiplyScalar(0.3));
 
-  // 당첨 여부 확인 및 텍스트 표시
+  // 카메라 애니메이션 시작
+  startCameraAnimation();
+
+  // 당첨 여부 확인 (콘솔에만 출력, 말풍선은 바닥 충돌 시 표시)
   if (ball.userData.isWinner) {
     console.log('🎉 当たり!!');
-    createFloatingText('当たり!', 0xff4444, ball);
   } else {
     console.log('💔 はずれ');
-    createFloatingText('はずれ', 0x4444ff, ball);
   }
 }
 
@@ -555,6 +623,16 @@ function animate(currentTime) {
       sphere.velocity.y = -sphere.velocity.y * bounce;
       sphere.velocity.x *= friction;
       sphere.velocity.z *= friction;
+      
+      // 바닥 충돌 시 말풍선과 화살표 표시 (한 번만)
+      if (!sphere.userData.showedResult) {
+        sphere.userData.showedResult = true;
+        if (sphere.userData.isWinner) {
+          createFloatingText('当たり!', 0xff4444, sphere);
+        } else {
+          createFloatingText('はずれ', 0x4444ff, sphere);
+        }
+      }
     }
 
     // basketRight(오른쪽 벽) 충돌
@@ -583,6 +661,9 @@ function animate(currentTime) {
   if (window.currentArrow && window.currentArrow.update) {
     window.currentArrow.update();
   }
+
+  // 카메라 애니메이션 업데이트
+  updateCameraAnimation();
 
   controls.update();
   renderer.render(scene, camera);
@@ -668,7 +749,8 @@ function toggleRotation(buttonNumber) {
   sphere.userData = {
     inside: true,
     localPos: new THREE.Vector3(0, 0, 0),
-    isWinner: isWinner
+    isWinner: isWinner,
+    showedResult: false
   };
   sphere.velocity = new THREE.Vector3(0, 0, 0);
   sphere.castShadow = true;
