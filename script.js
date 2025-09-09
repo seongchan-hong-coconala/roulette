@@ -32,6 +32,13 @@ let basketBottom, basketRight, basketBack, basketFront;
 // 손잡이 전역
 let handleGroup;
 
+// 사운드 전역
+let drawingSound;
+let ballHitSound;
+let bgmSound;
+let atariSound;
+let hazureSound;
+
 // 초기화
 function init() {
   scene = new THREE.Scene();
@@ -67,6 +74,10 @@ function init() {
   }
 
   window.addEventListener('resize', onWindowResize);
+  
+  // 사운드 초기화
+  initSound();
+  
   requestAnimationFrame(animate);
 }
 
@@ -624,13 +635,22 @@ function animate(currentTime) {
       sphere.velocity.x *= friction;
       sphere.velocity.z *= friction;
       
+      // 바닥 충돌 시 사운드 재생 (튕길 때만)
+      if (Math.abs(sphere.velocity.y) > 0.01) { // 충분한 속도가 있을 때만
+        playBallHitSound();
+      }
+      
       // 바닥 충돌 시 말풍선과 화살표 표시 (한 번만)
       if (!sphere.userData.showedResult) {
         sphere.userData.showedResult = true;
         if (sphere.userData.isWinner) {
           createFloatingText('当たり!', 0xff4444, sphere);
+          // 당첨 사운드 재생
+          playAtariSound();
         } else {
           createFloatingText('はずれ', 0x4444ff, sphere);
+          // 낙일 사운드 재생
+          playHazureSound();
         }
       }
     }
@@ -681,6 +701,9 @@ function toggleRotation(buttonNumber) {
   if (isRotating) return; // 이미 회전 중이면 무시
   
   isRotating = true;
+  
+  // 사운드 재생
+  playDrawingSound();
   
   // 모든 버튼 비활성화
   for (let i = 1; i <= 3; i++) {
@@ -793,6 +816,9 @@ function autoStop() {
   isRotating = false;
   angularVelocity *= 0.5; // 급격히 감속
   
+  // 사운드 정지
+  stopDrawingSound();
+  
   // 모든 버튼을 원래 상태로 복원
   for (let i = 1; i <= 3; i++) {
     const button = document.getElementById(`rotationButton${i}`);
@@ -823,6 +849,107 @@ function autoStop() {
 }
 
 
+// 사운드 초기화
+function initSound() {
+  drawingSound = new Audio('sounds/drawing.mp3');
+  drawingSound.loop = true;
+  drawingSound.volume = 0.5; // 볼륨 50%로 설정
+  
+  ballHitSound = new Audio('sounds/ball-hit.mp3');
+  ballHitSound.volume = 0.3; // 볼륨 30%로 설정 (작은 소리)
+  
+  bgmSound = new Audio('sounds/bgm.mp3');
+  bgmSound.loop = true;
+  bgmSound.volume = 0.3; // 볼륨 30%로 설정 (배경음악)
+  
+  atariSound = new Audio('sounds/atari.mp3');
+  atariSound.volume = 0.6; // 볼륨 60%로 설정 (당첨 사운드)
+  
+  hazureSound = new Audio('sounds/hazure.mp3');
+  hazureSound.volume = 0.4; // 볼륨 40%로 설정 (낙일 사운드)
+}
+
+// 사운드 재생
+function playDrawingSound() {
+  if (drawingSound) {
+    drawingSound.currentTime = 0; // 처음부터 재생
+    drawingSound.play().catch(e => {
+      console.log('사운드 재생 실패:', e);
+    });
+  }
+}
+
+// 공 충돌 사운드 재생
+function playBallHitSound() {
+  if (ballHitSound) {
+    ballHitSound.currentTime = 0; // 처음부터 재생
+    ballHitSound.play().catch(e => {
+      console.log('공 충돌 사운드 재생 실패:', e);
+    });
+  }
+}
+
+// BGM 재생
+function playBGM() {
+  if (bgmSound) {
+    bgmSound.play().catch(e => {
+      console.log('BGM 재생 실패:', e);
+    });
+  }
+}
+
+// BGM 정지
+function stopBGM() {
+  if (bgmSound) {
+    bgmSound.pause();
+    bgmSound.currentTime = 0;
+  }
+}
+
+// 당첨 사운드 재생
+function playAtariSound() {
+  if (atariSound) {
+    atariSound.currentTime = 0; // 처음부터 재생
+    atariSound.play().catch(e => {
+      console.log('당첨 사운드 재생 실패:', e);
+    });
+  }
+}
+
+// 낙일 사운드 재생
+function playHazureSound() {
+  if (hazureSound) {
+    hazureSound.currentTime = 0; // 처음부터 재생
+    hazureSound.play().catch(e => {
+      console.log('낙일 사운드 재생 실패:', e);
+    });
+  }
+}
+
+// 사운드 정지 (fade-out)
+function stopDrawingSound() {
+  if (drawingSound && !drawingSound.paused) {
+    // fade-out 효과
+    const fadeOutDuration = 500; // 0.5초 동안 fade-out
+    const fadeOutSteps = 20; // 20단계로 나누어 fade-out
+    const stepDuration = fadeOutDuration / fadeOutSteps;
+    const volumeStep = drawingSound.volume / fadeOutSteps;
+    
+    let currentStep = 0;
+    const fadeOutInterval = setInterval(() => {
+      currentStep++;
+      drawingSound.volume = Math.max(0, drawingSound.volume - volumeStep);
+      
+      if (currentStep >= fadeOutSteps) {
+        clearInterval(fadeOutInterval);
+        drawingSound.pause();
+        drawingSound.currentTime = 0;
+        drawingSound.volume = 0.5; // 원래 볼륨으로 복원
+      }
+    }, stepDuration);
+  }
+}
+
 // Info 토글 기능
 function initInfoToggle() {
   const infoToggle = document.getElementById('infoToggle');
@@ -846,4 +973,9 @@ function initInfoToggle() {
 window.addEventListener('load', function() {
   init();
   initInfoToggle();
+  
+  // BGM 자동 재생 (사용자 상호작용 후)
+  document.addEventListener('click', function() {
+    playBGM();
+  }, { once: true }); // 한 번만 실행
 });
