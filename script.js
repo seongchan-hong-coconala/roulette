@@ -685,12 +685,22 @@ function toggleRotation(buttonNumber) {
   // 모든 버튼 비활성화
   for (let i = 1; i <= 3; i++) {
     const button = document.getElementById(`rotationButton${i}`);
+    const levelText = button.querySelector('.level-text');
+    const startText = button.querySelector('.start-text');
     button.disabled = true;
     if (i === buttonNumber) {
-      button.textContent = `STOP ${i}`;
-      button.style.backgroundColor = '#ff4444';
+      levelText.textContent = `レベル${i}`;
+      startText.textContent = 'ストップ';
+      // 각 버튼별 빨간색 그라데이션 (활성화 상태)
+      if (i === 1) {
+        button.style.background = 'linear-gradient(145deg, #e53e3e 0%, #c53030 100%)';
+      } else if (i === 2) {
+        button.style.background = 'linear-gradient(145deg, #dc2626 0%, #b91c1c 100%)';
+      } else if (i === 3) {
+        button.style.background = 'linear-gradient(145deg, #ef4444 0%, #dc2626 100%)';
+      }
     } else {
-      button.style.backgroundColor = '#666666';
+      button.style.background = 'linear-gradient(145deg, #4a5568 0%, #2d3748 100%)';
     }
   }
   
@@ -786,8 +796,18 @@ function autoStop() {
   // 모든 버튼을 원래 상태로 복원
   for (let i = 1; i <= 3; i++) {
     const button = document.getElementById(`rotationButton${i}`);
-    button.textContent = `START ${i}`;
-    button.style.backgroundColor = '#00ff88';
+    const levelText = button.querySelector('.level-text');
+    const startText = button.querySelector('.start-text');
+    levelText.textContent = `レベル${i}`;
+    startText.textContent = 'スタート';
+    // 각 버튼별 기본 색상 복원
+    if (i === 1) {
+      button.style.background = 'linear-gradient(145deg, #667eea 0%, #764ba2 100%)';
+    } else if (i === 2) {
+      button.style.background = 'linear-gradient(145deg, #f093fb 0%, #f5576c 100%)';
+    } else if (i === 3) {
+      button.style.background = 'linear-gradient(145deg, #4facfe 0%, #00f2fe 100%)';
+    }
     button.disabled = false;
   }
   

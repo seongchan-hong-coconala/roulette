@@ -24,13 +24,66 @@
 
 #info h1 {
     margin-bottom: 10px;
-    font-size: 24px;
+    font-size: 36px;
 }
 
 #info p {
     margin-bottom: 5px;
-    font-size: 14px;
+    font-size: 20px;
     opacity: 0.9;
+}
+
+.probability-info {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.probability-info h3 {
+    margin-bottom: 8px;
+    font-size: 22px;
+    color: #ffeb3b;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.probability-info p {
+    margin-bottom: 4px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.level-1 {
+    color: #667eea;
+    font-weight: bold;
+    margin-right: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.level-2 {
+    color: #f093fb;
+    font-weight: bold;
+    margin-right: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.level-3 {
+    color: #4facfe;
+    font-weight: bold;
+    margin-right: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.note {
+    margin-top: 8px !important;
+    font-size: 16px !important;
+    color: #ffeb3b !important;
+    font-style: italic;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    border-top: 1px solid rgba(255, 235, 59, 0.3);
+    padding-top: 8px;
 }
 
 #controls {
@@ -45,45 +98,161 @@
     gap: 15px;
 }
 
-#rotationButton1, #rotationButton2, #rotationButton3 {
-    padding: 20px 40px;
-    font-size: 24px;
-    font-weight: bold;
-    border: 3px solid #ffffff;
-    border-radius: 15px;
-    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+#rotationButton1 {
+    padding: 24px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 107, 107, 0.3);
-    min-width: 120px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 
+        0 8px 25px rgba(102, 126, 234, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    min-width: 140px;
+    min-height: 80px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
 }
 
-#rotationButton1:hover, #rotationButton2:hover, #rotationButton3:hover {
-    transform: translateY(-3px) scale(1.05);
-    background: linear-gradient(135deg, #ff5252, #ff7979);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 107, 107, 0.5);
-    border-color: #ffeb3b;
+#rotationButton2 {
+    padding: 24px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 
+        0 8px 25px rgba(240, 147, 251, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    min-width: 140px;
+    min-height: 80px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#rotationButton3 {
+    padding: 24px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 
+        0 8px 25px rgba(79, 172, 254, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    min-width: 140px;
+    min-height: 80px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#rotationButton1::before, #rotationButton2::before, #rotationButton3::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+#rotationButton1:hover::before, #rotationButton2:hover::before, #rotationButton3:hover::before {
+    left: 100%;
+}
+
+.level-text {
+    font-size: 50px;
+    margin-bottom: 8px;
+    opacity: 0.85;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.start-text {
+    font-size: 80px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+#rotationButton1:hover {
+    transform: translateY(-4px) scale(1.02);
+    background: linear-gradient(145deg, #5a67d8 0%, #6b46c1 100%);
+    box-shadow: 
+        0 12px 35px rgba(102, 126, 234, 0.4),
+        0 6px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+#rotationButton2:hover {
+    transform: translateY(-4px) scale(1.02);
+    background: linear-gradient(145deg, #e879f9 0%, #ec4899 100%);
+    box-shadow: 
+        0 12px 35px rgba(240, 147, 251, 0.4),
+        0 6px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+#rotationButton3:hover {
+    transform: translateY(-4px) scale(1.02);
+    background: linear-gradient(145deg, #38bdf8 0%, #06b6d4 100%);
+    box-shadow: 
+        0 12px 35px rgba(79, 172, 254, 0.4),
+        0 6px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 #rotationButton1:active, #rotationButton2:active, #rotationButton3:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 
+        0 6px 20px rgba(102, 126, 234, 0.3),
+        0 3px 10px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 #rotationButton1:disabled, #rotationButton2:disabled, #rotationButton3:disabled {
-    opacity: 0.4;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
-    background: linear-gradient(135deg, #666666, #888888);
-    border-color: #999999;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(145deg, #4a5568 0%, #2d3748 100%);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 #rotationButton1:disabled:hover, #rotationButton2:disabled:hover, #rotationButton3:disabled:hover {
     transform: none;
-    background: linear-gradient(135deg, #666666, #888888);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(145deg, #4a5568 0%, #2d3748 100%);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
