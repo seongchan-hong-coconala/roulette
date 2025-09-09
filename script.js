@@ -8,9 +8,11 @@ let isRotating = false;
 let angularVelocity = 0;
 let spinDecay = 0.985;
 let emitted = false;
+let autoStopTimer = null;
+let emitTimer = null;
 
 let gravity = 0.01;
-let bounce = 0.7;
+let bounce = 0.45;
 let friction = 0.98;
 
 // 바구니 파츠 전역
@@ -45,11 +47,9 @@ function init() {
 
   addLights();
   createSquare();
-  createBasket();
+  // createBasket();
   
   // 초기 상태: 벽 숨기기
-  const wallToggle = document.getElementById('wallToggle');
-  wallToggle.checked = false;
   if (wall && scene.children.includes(wall)) {
     scene.remove(wall);
   }
@@ -142,7 +142,7 @@ function createSquare() {
     plainMat,   // left
     texMat,   // top
     plainMat,   // bottom
-    plainMat,   // front (이 면만 텍스처)
+    plainMat,   // front
     plainMat    // back
   ];
 
@@ -154,13 +154,6 @@ function createSquare() {
   // 뒤쪽 벽 (바닥과 90도 각도)
   const wallGeometry = new THREE.BoxGeometry(12, 8, 0.2);
   
-  // hommy.png 텍스처 로드
-  const hommyTexture = textureLoader.load('hommy.png');
-  hommyTexture.wrapS = THREE.RepeatWrapping;
-  hommyTexture.wrapT = THREE.RepeatWrapping;
-  hommyTexture.repeat.set(1, 1); // 텍스처 반복
-  
-  const wallTexMat = new THREE.MeshPhongMaterial({ map: hommyTexture });
   const wallPlainMat = new THREE.MeshPhongMaterial({ color: 0xf0f0f0 });
   
   const wallMaterials = [
@@ -168,7 +161,7 @@ function createSquare() {
     wallPlainMat,   // left
     wallPlainMat,   // top
     wallPlainMat,   // bottom
-    wallTexMat,     // front (드럼을 향하는 면에 텍스처)
+    wallPlainMat,   // front
     wallPlainMat    // back
   ];
   
@@ -207,12 +200,18 @@ function createSquare() {
   // 구슬 1개 생성 (드럼 내부 중심에서 시작)
   const sphereGeo = new THREE.SphereGeometry(0.12, 16, 16);
   sphereGeo.computeBoundingSphere(); // 바운딩 스피어 미리 계산
-  const sphereMat = new THREE.MeshPhongMaterial({ color: 0xff4444, shininess: 80 });
+  
+  // 기본적으로 파란색(꽝)으로 시작
+  const isWinner = false;
+  const sphereColor = 0x4444ff;
+  const sphereMat = new THREE.MeshPhongMaterial({ color: sphereColor, shininess: 80 });
+  
   sphere = new THREE.Mesh(sphereGeo, sphereMat);
   sphere.position.set(0, 5, 0);
   sphere.userData = {
     inside: true,
-    localPos: new THREE.Vector3(0, 0, 0) // 드럼 내부 로컬 좌표
+    localPos: new THREE.Vector3(0, 0, 0), // 드럼 내부 로컬 좌표
+    isWinner: isWinner
   };
   sphere.velocity = new THREE.Vector3(0, 0, 0);
   sphere.castShadow = true;
@@ -355,24 +354,34 @@ function createBasket() {
 // 구슬 배출
 function emitBall(ball) {
   ball.userData.inside = false;
-  const dir = new THREE.Vector3(0.05, -0.35, 0).normalize();
-  ball.velocity.copy(dir.multiplyScalar(0.22));
+  // 슈트 위치로 이동 후 수직으로 떨어뜨리기
+  ball.position.set(2.8, 4.7, 0); // 슈트 위치
+  const dir = new THREE.Vector3(0, -1, 0); // 수직 아래 방향
+  ball.velocity.copy(dir.multiplyScalar(0.3));
 
-  const hex = ball.material.color.getHex();
-  if (hex === 0xff4444) {
+  // 당첨 여부 확인
+  if (ball.userData.isWinner) {
     console.log('🎉 当たり!!');
+  } else {
+    console.log('💔 はずれ');
   }
 }
 
 // 새로운 공 생성(회전 완전 정지 후 리필)
 function createNewBall() {
   const sphereGeo = new THREE.SphereGeometry(0.12, 16, 16);
-  const sphereMat = new THREE.MeshPhongMaterial({ color: 0xff4444, shininess: 80 });
+  
+  // 기본적으로 파란색(꽝)으로 시작
+  const isWinner = false;
+  const sphereColor = 0x4444ff;
+  const sphereMat = new THREE.MeshPhongMaterial({ color: sphereColor, shininess: 80 });
+  
   const newSphere = new THREE.Mesh(sphereGeo, sphereMat);
   newSphere.position.set(0, 5, 0);
   newSphere.userData = {
     inside: true,
-    localPos: new THREE.Vector3(0, 0, 0)
+    localPos: new THREE.Vector3(0, 0, 0),
+    isWinner: isWinner
   };
   newSphere.velocity = new THREE.Vector3(0, 0, 0);
   newSphere.castShadow = true;
@@ -399,11 +408,11 @@ function animate(currentTime) {
     if (angularVelocity < 0.0005) angularVelocity = 0;
   }
 
-  if (square) square.rotation.z += angularVelocity;
+  if (square) square.rotation.z -= angularVelocity;
 
   // 구슬 업데이트
   if (sphere.userData.inside) {
-    sphere.userData.localPos.applyAxisAngle(new THREE.Vector3(0, 0, 1), angularVelocity);
+    sphere.userData.localPos.applyAxisAngle(new THREE.Vector3(0, 0, 1), -angularVelocity);
     sphere.position.copy(sphere.userData.localPos).add(new THREE.Vector3(0, 5, 0));
   } else {
     // 외부로 배출된 경우
@@ -438,19 +447,7 @@ function animate(currentTime) {
       }
     }
   }
-
-  // 스핀 중 단 1회 배출
-  if (isRotating && !emitted && angularVelocity > 0.12) {
-    emitted = true;
-    if (sphere.userData.inside) emitBall(sphere);
-  }
-  if (!isRotating && angularVelocity === 0) {
-    emitted = false;
-    // 회전 완전 정지 후 내부 공이 없으면 새 공 투입
-    if (!sphere.userData.inside) {
-      createNewBall();
-    }
-  }
+  // 공 배출은 이제 타이머로 처리됨 (랜덤 타이밍)
 
   controls.update();
   renderer.render(scene, camera);
@@ -464,34 +461,108 @@ function onWindowResize() {
 }
 
 // 버튼 토글
-function toggleRotation() {
-  isRotating = !isRotating;
-  const button = document.getElementById('rotationButton');
-  if (isRotating) {
-    button.textContent = 'STOP';
-    button.style.backgroundColor = '#ff4444';
-    angularVelocity = Math.max(angularVelocity, 0.06);
-  } else {
-    button.textContent = 'START';
+function toggleRotation(buttonNumber) {
+  if (isRotating) return; // 이미 회전 중이면 무시
+  
+  isRotating = true;
+  
+  // 모든 버튼 비활성화
+  for (let i = 1; i <= 3; i++) {
+    const button = document.getElementById(`rotationButton${i}`);
+    button.disabled = true;
+    if (i === buttonNumber) {
+      button.textContent = `STOP ${i}`;
+      button.style.backgroundColor = '#ff4444';
+    } else {
+      button.style.backgroundColor = '#666666';
+    }
+  }
+  
+  // 기존 공 삭제
+  if (sphere) {
+    scene.remove(sphere);
+  }
+  
+  // 버튼별 확률에 따라 구슬 색상 설정
+  let isWinner = false;
+  let sphereColor = 0x4444ff; // 기본값: 파란색(꽝)
+  
+  if (buttonNumber === 1) {
+    // 버튼 1: 1/3 확률
+    isWinner = Math.random() < 1/3;
+  } else if (buttonNumber === 2) {
+    // 버튼 2: 1/2 확률
+    isWinner = Math.random() < 1/2;
+  } else if (buttonNumber === 3) {
+    // 버튼 3: 1/1 확률 (100%)
+    isWinner = true;
+  }
+  
+  sphereColor = isWinner ? 0xff4444 : 0x4444ff;
+  
+  // 새로운 공 생성
+  const sphereGeo = new THREE.SphereGeometry(0.12, 16, 16);
+  sphereGeo.computeBoundingSphere();
+  
+  const sphereMat = new THREE.MeshPhongMaterial({ color: sphereColor, shininess: 80 });
+  
+  sphere = new THREE.Mesh(sphereGeo, sphereMat);
+  sphere.position.set(0, 5, 0);
+  sphere.userData = {
+    inside: true,
+    localPos: new THREE.Vector3(0, 0, 0),
+    isWinner: isWinner
+  };
+  sphere.velocity = new THREE.Vector3(0, 0, 0);
+  sphere.castShadow = true;
+  sphere.receiveShadow = true;
+  scene.add(sphere);
+  
+  // emitted 상태 초기화
+  emitted = false;
+  
+  angularVelocity = Math.max(angularVelocity, 0.06);
+  
+  // 1-4초 사이 랜덤하게 공 배출
+  const emitDelay = Math.random() * 3000 + 1000; // 1000-4000ms
+  emitTimer = setTimeout(() => {
+    if (isRotating && !emitted && sphere && sphere.userData.inside) {
+      emitted = true;
+      emitBall(sphere);
+    }
+  }, emitDelay);
+  
+  // 2-5초 사이 랜덤하게 자동으로 STOP
+  const randomDelay = Math.random() * 3000 + 2000; // 2000-5000ms
+  autoStopTimer = setTimeout(() => {
+    autoStop();
+  }, randomDelay);
+}
+
+// 자동 STOP 함수
+function autoStop() {
+  isRotating = false;
+  angularVelocity *= 0.5; // 급격히 감속
+  
+  // 모든 버튼을 원래 상태로 복원
+  for (let i = 1; i <= 3; i++) {
+    const button = document.getElementById(`rotationButton${i}`);
+    button.textContent = `START ${i}`;
     button.style.backgroundColor = '#00ff88';
+    button.disabled = false;
+  }
+  
+  if (autoStopTimer) {
+    clearTimeout(autoStopTimer);
+    autoStopTimer = null;
+  }
+  
+  if (emitTimer) {
+    clearTimeout(emitTimer);
+    emitTimer = null;
   }
 }
 
-// 벽 토글
-function toggleWall() {
-  const toggle = document.getElementById('wallToggle');
-  if (toggle.checked) {
-    // 벽 표시
-    if (wall && !scene.children.includes(wall)) {
-      scene.add(wall);
-    }
-  } else {
-    // 벽 숨기기
-    if (wall && scene.children.includes(wall)) {
-      scene.remove(wall);
-    }
-  }
-}
 
 // 초기화
 window.addEventListener('load', init);

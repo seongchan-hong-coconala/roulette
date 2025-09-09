@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js 정사각형</title>
+    <title>iOSDC2025 - ココナラ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,14 +15,9 @@
     </div>
     
     <div id="controls">
-        <button id="rotationButton" onclick="toggleRotation()">START</button>
-        <div class="toggle-container">
-            <label class="toggle-switch">
-                <input type="checkbox" id="wallToggle" onchange="toggleWall()" checked>
-                <span class="slider"></span>
-            </label>
-            <span class="toggle-label">優しさ</span>
-        </div>
+        <button id="rotationButton1" onclick="toggleRotation(1)">START 1</button>
+        <button id="rotationButton2" onclick="toggleRotation(2)">START 2</button>
+        <button id="rotationButton3" onclick="toggleRotation(3)">START 3</button>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
