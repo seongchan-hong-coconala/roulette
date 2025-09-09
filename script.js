@@ -851,21 +851,21 @@ function autoStop() {
 
 // 사운드 초기화
 function initSound() {
-  drawingSound = new Audio('sounds/drawing.mp3');
+  drawingSound = new Audio('https://github.com/seongchan-hong-coconala/roulette/blob/main/sounds/drawing.mp3?raw=true');
   drawingSound.loop = true;
   drawingSound.volume = 0.5; // 볼륨 50%로 설정
   
-  ballHitSound = new Audio('sounds/ball-hit.mp3');
+  ballHitSound = new Audio('https://github.com/seongchan-hong-coconala/roulette/blob/main/sounds/ball-hit.mp3?raw=true');
   ballHitSound.volume = 0.3; // 볼륨 30%로 설정 (작은 소리)
   
-  bgmSound = new Audio('sounds/bgm.mp3');
+  bgmSound = new Audio('https://github.com/seongchan-hong-coconala/roulette/blob/main/sounds/bgm.mp3?raw=true');
   bgmSound.loop = true;
   bgmSound.volume = 0.3; // 볼륨 30%로 설정 (배경음악)
   
-  atariSound = new Audio('sounds/atari.mp3');
+  atariSound = new Audio('https://github.com/seongchan-hong-coconala/roulette/blob/main/sounds/atari.mp3?raw=true');
   atariSound.volume = 0.6; // 볼륨 60%로 설정 (당첨 사운드)
   
-  hazureSound = new Audio('sounds/hazure.mp3');
+  hazureSound = new Audio('https://github.com/seongchan-hong-coconala/roulette/blob/main/sounds/hazure.mp3?raw=true');
   hazureSound.volume = 0.4; // 볼륨 40%로 설정 (낙일 사운드)
 }
 
