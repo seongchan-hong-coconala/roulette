@@ -22,6 +22,33 @@
     backdrop-filter: blur(10px);
 }
 
+.info-toggle {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 101;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.info-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.info-content {
+    transition: all 0.3s ease;
+}
+
 #info h1 {
     margin-bottom: 10px;
     font-size: 36px;
@@ -198,7 +225,7 @@
 }
 
 .start-text {
-    font-size: 80px;
+    font-size: clamp(40px, 8vw, 80px);
     font-weight: 700;
     letter-spacing: 1px;
 }
@@ -254,5 +281,160 @@
     box-shadow: 
         0 4px 15px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 모바일 반응형 스타일 */
+@media (max-width: 768px) {
+    .info-toggle {
+        display: block;
+    }
+    
+    #info {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 15px;
+        font-size: 14px;
+        min-height: 50px;
+        overflow: hidden;
+    }
+    
+    #info.collapsed {
+        height: 50px;
+        padding: 10px;
+    }
+    
+    #info.collapsed .info-content {
+        opacity: 0;
+        transform: translateY(-20px);
+        pointer-events: none;
+    }
+    
+    .info-content {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    #controls {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    #rotationButton1, #rotationButton2, #rotationButton3 {
+        padding: 16px 20px;
+        font-size: 14px;
+        min-width: auto;
+        width: auto;
+        min-height: 60px;
+        border-radius: 15px;
+    }
+    
+    .level-text {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+    
+    .start-text {
+        font-size: clamp(24px, 6vw, 40px);
+    }
+    
+    #info h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+    
+    #info p {
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+    
+    .probability-info {
+        margin-top: 10px;
+        padding: 8px;
+    }
+    
+    .probability-info h3 {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+    
+    .probability-info p {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+    
+    .note {
+        font-size: 12px !important;
+        margin-top: 6px !important;
+        padding-top: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-toggle {
+        display: block;
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+    
+    #info {
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        padding: 10px;
+        min-height: 45px;
+    }
+    
+    #info.collapsed {
+        height: 45px;
+        padding: 8px;
+    }
+    
+    #controls {
+        bottom: 5px;
+        left: 5px;
+        right: 5px;
+        gap: 8px;
+        padding: 0 5px;
+    }
+    
+    #rotationButton1, #rotationButton2, #rotationButton3 {
+        padding: 12px 16px;
+        font-size: 12px;
+        min-width: auto;
+        width: auto;
+        min-height: 50px;
+        border-radius: 12px;
+    }
+    
+    .level-text {
+        font-size: 20px;
+    }
+    
+    .start-text {
+        font-size: clamp(20px, 5vw, 32px);
+    }
+    
+    #info h1 {
+        font-size: 20px;
+    }
+    
+    #info p {
+        font-size: 14px;
+    }
+    
+    .probability-info h3 {
+        font-size: 16px;
+    }
+    
+    .probability-info p {
+        font-size: 12px;
+    }
 }
 

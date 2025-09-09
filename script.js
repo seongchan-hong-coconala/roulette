@@ -823,5 +823,27 @@ function autoStop() {
 }
 
 
+// Info 토글 기능
+function initInfoToggle() {
+  const infoToggle = document.getElementById('infoToggle');
+  const info = document.getElementById('info');
+  
+  if (infoToggle && info) {
+    infoToggle.addEventListener('click', function() {
+      info.classList.toggle('collapsed');
+      
+      // 버튼 아이콘 변경
+      if (info.classList.contains('collapsed')) {
+        infoToggle.textContent = 'ℹ️';
+      } else {
+        infoToggle.textContent = '✕';
+      }
+    });
+  }
+}
+
 // 초기화
-window.addEventListener('load', init);
+window.addEventListener('load', function() {
+  init();
+  initInfoToggle();
+});
