@@ -148,6 +148,7 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 #rotationButton2 {
@@ -173,6 +174,7 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 #rotationButton3 {
@@ -198,6 +200,7 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 #rotationButton1::before, #rotationButton2::before, #rotationButton3::before {
@@ -283,6 +286,49 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+/* iPad Pro 반응형 스타일 */
+@media (max-width: 1366px) and (min-width: 1025px) {
+    #rotationButton1, #rotationButton2, #rotationButton3 {
+        padding: 20px 24px;
+        font-size: 16px;
+        min-width: auto;
+        width: auto;
+        min-height: 70px;
+        border-radius: 18px;
+        white-space: nowrap;
+    }
+    
+    .level-text {
+        font-size: 24px;
+        margin-bottom: 6px;
+    }
+    
+    .start-text {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    #rotationButton1, #rotationButton2, #rotationButton3 {
+        padding: 14px 16px;
+        font-size: 12px;
+        min-width: auto;
+        width: auto;
+        min-height: 55px;
+        border-radius: 14px;
+        white-space: nowrap;
+    }
+    
+    .level-text {
+        font-size: 18px;
+        margin-bottom: 3px;
+    }
+    
+    .start-text {
+        font-size: 20px;
+    }
+}
+
 /* 모바일 반응형 스타일 */
 @media (max-width: 768px) {
     .info-toggle {
@@ -332,6 +378,7 @@
         width: auto;
         min-height: 60px;
         border-radius: 15px;
+        white-space: nowrap;
     }
     
     .level-text {
@@ -411,6 +458,7 @@
         width: auto;
         min-height: 50px;
         border-radius: 12px;
+        white-space: nowrap;
     }
     
     .level-text {
